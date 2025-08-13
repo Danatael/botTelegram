@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "foreignKeys"
+}
+
+model asistencias {
+  id                 Int       @id @default(autoincrement())
+  empleado_id        Int
+  fecha              DateTime  @db.Date
+  hora_entrada       DateTime? @db.DateTime(0)
+  hora_comida_inicio DateTime? @db.DateTime(0)
+  hora_comida_fin    DateTime? @db.DateTime(0)
+  hora_salida        DateTime? @db.DateTime(0)
+  ubicacion          String?   @db.VarChar(100)
+  observaciones      String?   @db.Text
+  creado_en          DateTime? @default(now()) @db.DateTime(0)
+  actualizado_en     DateTime? @default(now()) @db.DateTime(0)
+  empleados          empleados @relation(fields: [empleado_id], references: [id], onUpdate: Restrict, map: "asistencias_ibfk_1")
+
+  @@index([empleado_id, fecha], map: "idx_asistencias_empleado_fecha")
+}
+
+model empleados {
+  id              Int           @id @default(autoincrement())
+  nombre          String        @db.VarChar(100)
+  telegram_id     BigInt?       @unique(map: "telegram_id")
+  codigo_empleado String?       @unique(map: "codigo_empleado") @db.VarChar(20)
+  departamento    String?       @db.VarChar(50)
+  fecha_alta      DateTime?     @default(now()) @db.DateTime(0)
+  asistencias     asistencias[]
+}

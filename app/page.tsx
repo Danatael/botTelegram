@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Clock, User, CheckCircle } from "lucide-react"
-import { TelegramChat } from "@/components/telegram-chat"
+import { TelegramBotIntegration } from "@/components/telegram-bot-integration"
 import { QRScanner } from "@/components/qr-scanner"
 import { AttendanceForm } from "@/components/attendance-form"
 import Link from "next/link"
@@ -50,7 +50,7 @@ export default function WitmacBot() {
 
       {/* Contenido principal */}
       <main className="max-w-md mx-auto bg-white min-h-[calc(100vh-80px)] shadow-xl">
-        {activeView === "chat" && <TelegramChat onViewChange={setActiveView} />}
+        {activeView === "chat" && <TelegramBotIntegration />}
         {activeView === "qr" && <QRScanner onBack={() => setActiveView("chat")} />}
         {activeView === "manual" && <AttendanceForm onBack={() => setActiveView("chat")} />}
       </main>
