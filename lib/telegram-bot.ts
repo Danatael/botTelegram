@@ -338,36 +338,6 @@ bot.on('callback_query', async (ctx) => {
   }
 });
 
-// Manejar nuevas acciones de comida y regreso
-type NextAction = 'iniciar_comida' | 'regresar_trabajo';
-bot.action('iniciar_comida', (ctx) => {
-  ctx.answerCbQuery('Hora de comida iniciada');
-  ctx.reply('🍽️ ¡Hora de comida registrada! Disfruta tu descanso. Cuando regreses, pulsa "Regresar a trabajar".', {
-    reply_markup: {
-      inline_keyboard: [
-        [
-          { text: '🔙 Regresar a trabajar', callback_data: 'regresar_trabajo' }
-        ],
-        [
-          { text: '🏁 Registrar salida', callback_data: 'salida' }
-        ]
-      ]
-    }
-  });
-});
-bot.action('regresar_trabajo', (ctx) => {
-  ctx.answerCbQuery('Regreso de comida registrado');
-  ctx.reply('🔙 ¡Bienvenido de vuelta! Puedes registrar tu salida cuando termines tu jornada.', {
-    reply_markup: {
-      inline_keyboard: [
-        [
-          { text: '🏁 Registrar salida', callback_data: 'salida' }
-        ]
-      ]
-    }
-  });
-});
-
 // Manejar mensajes de texto con IA simple
 bot.on('text', (ctx) => {
   const message = ctx.message.text;
