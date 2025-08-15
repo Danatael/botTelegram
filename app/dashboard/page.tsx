@@ -12,6 +12,7 @@ import { DepartmentChart } from "@/components/dashboard/department-chart"
 import { ComplianceChart } from "@/components/dashboard/compliance-chart"
 import { StatsCards } from "@/components/dashboard/stats-cards"
 import { AttendanceTable } from "@/components/dashboard/attendance-table"
+import { RegistrosRecientesCard } from "@/components/dashboard/registros-recientes-card"
 import Link from "next/link"
 
 export default function Dashboard() {
@@ -150,16 +151,8 @@ export default function Dashboard() {
               </Card>
             </div>
 
-            {/* Tabla de registros recientes */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Registros Recientes</CardTitle>
-                <CardDescription>Últimos registros de asistencia del sistema</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <AttendanceTable limit={10} />
-              </CardContent>
-            </Card>
+            {/* Tabla de registros recientes personalizada */}
+            <RegistrosRecientesCard />
           </TabsContent>
 
           <TabsContent value="attendance" className="space-y-6">

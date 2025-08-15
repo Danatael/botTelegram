@@ -48,18 +48,38 @@ async function getOrCreateAsistenciaDelDia(empleadoId: number, fechaReferencia: 
 }
 
 export async function registrarEntrada(telegramId: number, nombre: string) {
-  const empleado = await getOrCreateEmpleado(telegramId, nombre);
-  const hoy = new Date();
-  const asistencia = await getOrCreateAsistenciaDelDia(empleado.id, hoy);
-  // Verificar si ya existe una entrada para esta asistencia hoy
-  const entradaExistente = await prisma.entradas.findFirst({
-    where: { asistencia_id: asistencia.id, empleado_id: empleado.id }
-  });
-  if (entradaExistente) throw new Error('Ya registraste tu entrada hoy.');
-  await prisma.entradas.create({
-    data: { asistencia_id: asistencia.id, empleado_id: empleado.id, hora_entrada: hoy }
-  });
-  return asistencia;
+  try {
+    const empleado = await getOrCreateEmpleado(telegramId, nombre);
+    console.log('[registrarEntrada] empleado:', empleado);
+    const hoy = new Date();
+    const asistencia = await getOrCreateAsistenciaDelDia(empleado.id, hoy);
+    // Actualizar la ubicación textual en la asistencia del día
+    await prisma.asistencias.update({
+      where: { id: asistencia.id },
+      data: {
+        ubicacion: "Manantiales de Tehuacán #704, El Riego, Ex- Hacienda, 75763 Tehuacán, Puebla, México."
+      }
+    });
+    console.log('[registrarEntrada] asistencia:', asistencia);
+    // Verificar si ya existe una entrada para esta asistencia hoy
+    const entradaExistente = await prisma.entradas.findFirst({
+      where: { asistencia_id: asistencia.id, empleado_id: empleado.id }
+    });
+    console.log('[registrarEntrada] entradaExistente:', entradaExistente);
+    if (entradaExistente) throw new Error('Ya registraste tu entrada hoy.');
+    const nuevaEntrada = await prisma.entradas.create({
+      data: { asistencia_id: asistencia.id, empleado_id: empleado.id, hora_entrada: hoy }
+    });
+    console.log('[registrarEntrada] nuevaEntrada:', nuevaEntrada);
+    return asistencia;
+  } catch (error) {
+    console.error('[registrarEntrada] Error:', error);
+    if (error instanceof Error) {
+      console.error('Mensaje:', error.message);
+      console.error('Stack:', error.stack);
+    }
+    throw error;
+  }
 }
 
 export async function iniciarComida(telegramId: number, nombre: string) {
@@ -140,6 +160,13 @@ export async function registrarSalida(telegramId: number, nombre: string) {
   const empleado = await getOrCreateEmpleado(telegramId, nombre);
   const hoy = new Date();
   const asistencia = await getOrCreateAsistenciaDelDia(empleado.id, hoy);
+  // Actualizar la ubicación textual en la asistencia del día
+  await prisma.asistencias.update({
+    where: { id: asistencia.id },
+    data: {
+      ubicacion: "Manantiales de Tehuacán #704, El Riego, Ex- Hacienda, 75763 Tehuacán, Puebla, México."
+    }
+  });
   // Verificar si ya existe una salida para esta asistencia hoy
   const salidaExistente = await prisma.salidas.findFirst({
     where: { asistencia_id: asistencia.id, empleado_id: empleado.id }
@@ -149,4 +176,18 @@ export async function registrarSalida(telegramId: number, nombre: string) {
     data: { asistencia_id: asistencia.id, empleado_id: empleado.id, hora_salida: hoy }
   });
   return asistencia;
+}
+
+export async function getPresentesHoy(): Promise<number> {
+  const hoy = new Date();
+  const fechaStr = hoy.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  // Buscar entradas cuya asistencia sea de hoy
+  const presentes = await prisma.entradas.count({
+    where: {
+      asistencia: {
+        fecha: new Date(fechaStr)
+      }
+    }
+  });
+  return presentes;
 }
