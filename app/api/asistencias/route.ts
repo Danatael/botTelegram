@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// GET: Listar asistencias con datos de empleado y registros de entrada, comida y salida
+// GET: Listar asistencias con datos de empleado y registros de entrada, comida_inicio, comida_fin y salida
 export async function GET() {
   const asistencias = await prisma.asistencias.findMany({
     include: {
       empleados: true,
       entradas: true,
-      comidas: true,
+      comida_inicio: true,
+      comida_fin: true,
       salidas: true
     },
     orderBy: { fecha: 'desc' }
