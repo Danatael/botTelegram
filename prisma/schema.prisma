@@ -38,6 +38,7 @@ model comidas {
   asistencia_id      Int
   hora_comida_inicio DateTime?     @db.DateTime(0)
   hora_comida_fin    DateTime?     @db.DateTime(0)
+  validado           Boolean       @default(false) @db.TinyInt
   asistencia         asistencias   @relation(fields: [asistencia_id], references: [id])
 }
 

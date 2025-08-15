@@ -16,25 +16,38 @@ export async function getOrCreateEmpleado(telegramId: number, nombre: string) {
   return empleado;
 }
 
+// Utilidad robusta para obtener o crear la asistencia del día
+async function getOrCreateAsistenciaDelDia(empleadoId: number, fechaReferencia: Date) {
+  // Usar solo la parte de la fecha (sin hora)
+  const soloFecha = new Date(fechaReferencia.getFullYear(), fechaReferencia.getMonth(), fechaReferencia.getDate());
+  // Buscar asistencia por usuario y fecha exacta (sin hora)
+  const asistenciaExistente = await prisma.asistencias.findFirst({
+    where: {
+      empleado_id: empleadoId,
+      fecha: soloFecha
+    },
+    orderBy: { id: 'asc' }
+  });
+  if (asistenciaExistente) {
+    console.log('Asistencia encontrada:', asistenciaExistente.id, 'para empleado', empleadoId, 'fecha', asistenciaExistente.fecha);
+    return asistenciaExistente;
+  }
+  // Si no existe, crear una nueva con solo la fecha (sin hora)
+  const nuevaAsistencia = await prisma.asistencias.create({
+    data: { empleado_id: empleadoId, fecha: soloFecha }
+  });
+  console.log('Asistencia creada:', nuevaAsistencia.id, 'para empleado', empleadoId, 'fecha', soloFecha);
+  return nuevaAsistencia;
+}
+
+// Todas las funciones de registro deben usar el mismo asistencia_id del día para el usuario
 export async function registrarEntrada(telegramId: number, nombre: string) {
   const empleado = await getOrCreateEmpleado(telegramId, nombre);
-  const hoy = new Date();
-  const { inicio, fin } = getRangoDia(hoy);
-  // Buscar o crear la fila de asistencia del día
-  let asistencia = await prisma.asistencias.findFirst({
-    where: {
-      empleado_id: empleado.id,
-      fecha: {
-        gte: inicio,
-        lt: fin
-      }
-    }
-  });
-  if (!asistencia) {
-    asistencia = await prisma.asistencias.create({
-      data: { empleado_id: empleado.id, fecha: inicio }
-    });
-  }
+  const ahora = new Date();
+  const fechaLocal = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 0, 0, 0, 0);
+  // Buscar asistencia SOLO por usuario y fecha
+  const asistencia = await getOrCreateAsistenciaDelDia(empleado.id, fechaLocal);
+  console.log('USANDO asistencia_id para ENTRADA:', asistencia.id);
   // Verificar si ya existe una entrada para esta asistencia hoy
   const entradaExistente = await prisma.entradas.findFirst({
     where: { asistencia_id: asistencia.id }
@@ -42,95 +55,101 @@ export async function registrarEntrada(telegramId: number, nombre: string) {
   if (entradaExistente) throw new Error('Ya registraste tu entrada hoy.');
   // Registrar la entrada SOLO en la tabla hija
   await prisma.entradas.create({
-    data: { asistencia_id: asistencia.id, hora_entrada: hoy }
+    data: { asistencia_id: asistencia.id, hora_entrada: ahora }
   });
   return asistencia;
 }
 
 export async function iniciarComida(telegramId: number, nombre: string) {
-  const empleado = await getOrCreateEmpleado(telegramId, nombre);
-  const hoy = new Date();
-  const { inicio, fin } = getRangoDia(hoy);
-  // Buscar la asistencia del día en la tabla asistencias
-  let asistencia = await prisma.asistencias.findFirst({
-    where: {
-      empleado_id: empleado.id,
-      fecha: {
-        gte: inicio,
-        lt: fin
+  try {
+    const empleado = await getOrCreateEmpleado(telegramId, nombre);
+    const ahora = new Date();
+    const fechaLocal = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 0, 0, 0, 0);
+    // Buscar asistencia SOLO por usuario y fecha
+    const asistencia = await getOrCreateAsistenciaDelDia(empleado.id, fechaLocal);
+    console.log('USANDO asistencia_id para COMIDA:', asistencia.id);
+    if (!asistencia) throw new Error('Primero debes registrar tu entrada');
+    // Buscar si ya existe un registro de comida ABIERTO para hoy (sin hora_comida_fin y validado en false)
+    let comidaAbierta = await prisma.comidas.findFirst({
+      where: {
+        asistencia_id: asistencia.id,
+        hora_comida_inicio: { not: null },
+        hora_comida_fin: null,
+        validado: false
       }
+    });
+    console.log('DEBUG comidaAbierta:', comidaAbierta);
+    if (comidaAbierta) {
+      // Si ya hay una comida abierta, no crear otra
+      return asistencia;
     }
-  });
-  if (!asistencia) throw new Error('Primero debes registrar tu entrada');
-  // Buscar si ya existe un registro de comida para hoy
-  let comida = await prisma.comidas.findFirst({
-    where: { asistencia_id: asistencia.id }
-  });
-  if (comida) {
-    if (comida.hora_comida_inicio) throw new Error('Ya registraste el inicio de tu comida hoy.');
-    // Si existe pero no tiene hora_comida_inicio, actualizarlo
-    await prisma.comidas.update({
-      where: { id: comida.id },
-      data: { hora_comida_inicio: hoy }
+    // Si no hay registro abierto, crear uno nuevo SOLO en la tabla comidas
+    const nuevaComida = await prisma.comidas.create({
+      data: { asistencia_id: asistencia.id, hora_comida_inicio: ahora, validado: false }
     });
-  } else {
-    // Si no existe, crear uno nuevo SOLO en la tabla comidas
-    await prisma.comidas.create({
-      data: { asistencia_id: asistencia.id, hora_comida_inicio: hoy }
+    console.log('DEBUG nueva comida creada:', nuevaComida);
+    // Confirmar que el registro de comida existe y tiene hora_comida_inicio
+    const comidaCheck = await prisma.comidas.findFirst({
+      where: {
+        asistencia_id: asistencia.id,
+        hora_comida_inicio: { not: null },
+        hora_comida_fin: null,
+        validado: false
+      }
     });
+    console.log('DEBUG comidaCheck:', comidaCheck);
+    if (!comidaCheck || !comidaCheck.hora_comida_inicio) {
+      throw new Error('Error al registrar el inicio de comida. Intenta de nuevo.');
+    }
+    return asistencia;
+  } catch (error) {
+    console.error('Error en iniciarComida:', error);
+    throw error;
   }
-  return asistencia;
 }
 
 export async function regresarTrabajo(telegramId: number, nombre: string) {
   const empleado = await getOrCreateEmpleado(telegramId, nombre);
-  const hoy = new Date();
-  const { inicio, fin } = getRangoDia(hoy);
-  // Buscar la asistencia del día en la tabla asistencias
-  let asistencia = await prisma.asistencias.findFirst({
-    where: {
-      empleado_id: empleado.id,
-      fecha: {
-        gte: inicio,
-        lt: fin
-      }
-    }
-  });
-  if (!asistencia) throw new Error('Primero debes registrar tu entrada');
-  // Buscar el registro de comida de hoy
+  const ahora = new Date();
+  const fechaLocal = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+  // Buscar asistencia SOLO por usuario y fecha
+  const asistencia = await getOrCreateAsistenciaDelDia(empleado.id, fechaLocal);
+  // Buscar el registro de comida de hoy SOLO por asistencia_id
   const comida = await prisma.comidas.findFirst({
-    where: { asistencia_id: asistencia.id }
+    where: {
+      asistencia_id: asistencia.id,
+      hora_comida_inicio: { not: null },
+      hora_comida_fin: null,
+      validado: false
+    },
+    orderBy: { id: 'asc' }
   });
-  if (!comida || !comida.hora_comida_inicio) throw new Error('Primero debes registrar el inicio de tu comida');
-  if (comida.hora_comida_fin) throw new Error('Ya registraste tu regreso de comida hoy.');
-  // Validar que haya pasado al menos 1 hora desde el inicio de comida
-  const inicioComida = new Date(comida.hora_comida_inicio);
-  const diffMs = hoy.getTime() - inicioComida.getTime();
-  const diffMin = diffMs / (1000 * 60);
-  if (diffMin < 60) {
-    throw new Error('Debes tomar al menos 1 hora de comida antes de regresar. Faltan ' + Math.ceil(60 - diffMin) + ' minutos.');
+  if (!comida) {
+    // Mensaje más claro y log de ayuda
+    console.warn(`No se encontró registro de comida abierto para asistencia_id=${asistencia.id} (usuario=${empleado.id})`);
+    throw new Error('No tienes una comida pendiente de finalizar hoy. Si crees que es un error, contacta a soporte.');
   }
-  // Actualizar SOLO la tabla comidas
-  await prisma.comidas.update({
-    where: { id: comida.id },
-    data: { hora_comida_fin: hoy }
-  });
-  return asistencia;
+  // Actualizar SOLO la tabla comidas y devolver la hora registrada
+  try {
+    const comidaActualizada = await prisma.comidas.update({
+      where: { id: comida.id },
+      data: { hora_comida_fin: ahora, validado: true }
+    });
+    console.log(`Comida actualizada correctamente: comida_id=${comida.id}, hora_comida_fin=${ahora}`);
+    return { asistencia, hora_regreso: comidaActualizada.hora_comida_fin };
+  } catch (err) {
+    console.error('Error al actualizar hora_comida_fin:', err, { comida });
+    throw new Error('Error al registrar el regreso de comida. Contacta a soporte.');
+  }
 }
 
 export async function registrarSalida(telegramId: number, nombre: string) {
   const empleado = await getOrCreateEmpleado(telegramId, nombre);
-  const hoy = new Date();
-  const { inicio, fin } = getRangoDia(hoy);
-  let asistencia = await prisma.asistencias.findFirst({
-    where: {
-      empleado_id: empleado.id,
-      fecha: {
-        gte: inicio,
-        lt: fin
-      }
-    }
-  });
+  const ahora = new Date();
+  const fechaLocal = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 0, 0, 0, 0);
+  // Buscar asistencia SOLO por usuario y fecha
+  const asistencia = await getOrCreateAsistenciaDelDia(empleado.id, fechaLocal);
+  console.log('USANDO asistencia_id para SALIDA:', asistencia.id);
   if (!asistencia) throw new Error('Primero debes registrar tu entrada');
   // Verificar si ya existe una salida para esta asistencia hoy
   const salidaExistente = await prisma.salidas.findFirst({
@@ -139,7 +158,7 @@ export async function registrarSalida(telegramId: number, nombre: string) {
   if (salidaExistente) throw new Error('Ya registraste tu salida hoy.');
   // Registrar la salida SOLO en la tabla hija
   await prisma.salidas.create({
-    data: { asistencia_id: asistencia.id, hora_salida: hoy }
+    data: { asistencia_id: asistencia.id, hora_salida: ahora }
   });
   return asistencia;
 }
