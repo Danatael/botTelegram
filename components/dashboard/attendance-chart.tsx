@@ -1,29 +1,48 @@
 "use client"
 
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { useEffect, useState } from "react"
 
 interface AttendanceChartProps {
   dateRange: string
 }
 
 export function AttendanceChart({ dateRange }: AttendanceChartProps) {
-  // Datos simulados - en producción vendrían de la API
-  const data = [
-    { date: "Lun", asistencia: 42, meta: 45 },
-    { date: "Mar", asistencia: 44, meta: 45 },
-    { date: "Mié", asistencia: 41, meta: 45 },
-    { date: "Jue", asistencia: 45, meta: 45 },
-    { date: "Vie", asistencia: 43, meta: 45 },
-    { date: "Sáb", asistencia: 38, meta: 45 },
-    { date: "Dom", asistencia: 35, meta: 45 },
-  ]
+  // Estado para datos reales
+  const [data, setData] = useState([
+    { date: "Lun", asistencia: 0, meta: 25 },
+    { date: "Mar", asistencia: 0, meta: 25 },
+    { date: "Mié", asistencia: 0, meta: 25 },
+    { date: "Jue", asistencia: 0, meta: 25 },
+    { date: "Vie", asistencia: 0, meta: 25 },
+    { date: "Sáb", asistencia: 0, meta: 25 },
+    { date: "Dom", asistencia: 0, meta: 25 },
+  ])
+
+  useEffect(() => {
+    // Aquí deberías hacer fetch a tu API real para obtener los datos de asistencia por día
+    // Ejemplo de fetch simulado:
+    fetch(`/api/asistencias/por-dia?dateRange=${dateRange}`)
+      .then((res) => res.ok ? res.json() : Promise.resolve([]))
+      .then((result) => {
+        // result debe ser un array tipo: [{ date: 'Lun', asistencia: 18 }, ...]
+        // Mapear para asegurar que siempre hay 7 días y meta=25
+        const dias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
+        const dataMap = dias.map((dia) => {
+          const found = result.find((r: any) => r.date === dia)
+          return { date: dia, asistencia: found ? found.asistencia : 0, meta: 25 }
+        })
+        setData(dataMap)
+      })
+      .catch(() => {})
+  }, [dateRange])
 
   return (
     <div className="h-80">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <XAxis dataKey="date" axisLine={false} tickLine={false} className="text-sm" />
-          <YAxis axisLine={false} tickLine={false} className="text-sm" />
+          <YAxis domain={[0, 25]} axisLine={false} tickLine={false} className="text-sm" />
           <Tooltip
             contentStyle={{
               backgroundColor: "white",
@@ -38,7 +57,7 @@ export function AttendanceChart({ dateRange }: AttendanceChartProps) {
             stroke="#2563eb"
             strokeWidth={3}
             dot={{ fill: "#2563eb", strokeWidth: 2, r: 4 }}
-            name="Asistencia Real"
+            name="Empleados Registrados"
           />
           <Line
             type="monotone"
@@ -47,7 +66,7 @@ export function AttendanceChart({ dateRange }: AttendanceChartProps) {
             strokeWidth={2}
             strokeDasharray="5 5"
             dot={false}
-            name="Meta"
+            name="Meta (25)"
           />
         </LineChart>
       </ResponsiveContainer>
