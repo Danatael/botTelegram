@@ -41,7 +41,7 @@ export function TelegramChat({ onViewChange }: TelegramChatProps) {
       id: 1,
       type: "bot",
       content:
-        "¡Hola! Bienvenido al sistema de registro de asistencia de Witmac. ¿Cómo te gustaría registrar tu asistencia hoy?",
+        "¡Hola! Soy el Bot de Asistencias TMAC 🤖\n\nTambién puedes usar nuestro bot de Telegram directamente:\n👉 @AsistenciasTmac_bot\n\n¿Cómo te gustaría registrar tu asistencia hoy?",
       timestamp: new Date(),
       actions: [
         {
@@ -54,6 +54,13 @@ export function TelegramChat({ onViewChange }: TelegramChatProps) {
           action: "manual",
           icon: <Edit3 className="w-4 h-4" />,
         },
+        {
+          label: "Abrir Bot de Telegram",
+          action: "telegram",
+          icon: <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+            <span className="text-white text-xs font-bold">T</span>
+          </div>,
+        },
       ],
     }
 
@@ -61,6 +68,35 @@ export function TelegramChat({ onViewChange }: TelegramChatProps) {
   }, [])
 
   const handleAction = (action: string) => {
+    // Manejar acción del bot de Telegram
+    if (action === "telegram") {
+      window.open("https://t.me/AsistenciasTmac_bot", "_blank");
+      
+      const userMessage: Message = {
+        id: messages.length + 1,
+        type: "user",
+        content: "Abrir Bot de Telegram",
+        timestamp: new Date(),
+      }
+
+      setMessages((prev) => [...prev, userMessage])
+      setIsTyping(true)
+
+      setTimeout(() => {
+        const botResponse: Message = {
+          id: messages.length + 2,
+          type: "bot",
+          content: "¡Perfecto! Te he redirigido al bot de Telegram. Ahí podrás usar comandos como:\n\n/start - Comenzar\n/registrar - Registrar asistencia\n/estado - Ver estado actual\n/historial - Ver historial",
+          timestamp: new Date(),
+        }
+
+        setMessages((prev) => [...prev, botResponse])
+        setIsTyping(false)
+      }, 2000)
+      
+      return;
+    }
+
     // Agregar mensaje del usuario
     const userMessage: Message = {
       id: messages.length + 1,

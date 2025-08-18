@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, Clock, CheckCircle, AlertTriangle, TrendingUp, Calendar } from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface StatsCardsProps {
   dateRange: string
@@ -7,10 +8,24 @@ interface StatsCardsProps {
 }
 
 export function StatsCards({ dateRange, department }: StatsCardsProps) {
+  const [presentToday, setPresentToday] = useState<number | null>(null)
+  const [totalEmployees, setTotalEmployees] = useState<number | null>(null)
+
+  useEffect(() => {
+    // Obtener presentes hoy
+    fetch("/api/asistencias/presentes")
+      .then((res) => res.json())
+      .then((data) => setPresentToday(data.presentes))
+    // Obtener empleados totales
+    fetch("/api/asistencias")
+      .then((res) => res.json())
+      .then((data) => setTotalEmployees(Array.isArray(data) ? data.length : null))
+  }, [])
+
   // En producción, estos datos vendrían de la API
   const stats = {
-    totalEmployees: 45,
-    presentToday: 42,
+    totalEmployees: totalEmployees ?? 0,
+    presentToday: presentToday ?? 0,
     avgHoursWorked: 8.2,
     complianceRate: 95.5,
     lateArrivals: 3,
@@ -77,5 +92,35 @@ export function StatsCards({ dateRange, department }: StatsCardsProps) {
         </Card>
       ))}
     </div>
+  )
+}
+
+export function PresentesHoyCard() {
+  const [presentToday, setPresentToday] = useState<number | null>(null)
+
+  useEffect(() => {
+    const fetchPresentes = () => {
+      fetch("/api/asistencias/presentes")
+        .then((res) => res.json())
+        .then((data) => setPresentToday(data.presentes))
+    }
+    fetchPresentes()
+    const interval = setInterval(fetchPresentes, 1000) // Actualiza cada 1 segundo
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <Card className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+          <CheckCircle className="h-4 w-4 text-green-600" /> Presentes Hoy
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="text-4xl font-bold text-center">
+          {presentToday === null ? '—' : presentToday}
+        </div>
+      </CardContent>
+    </Card>
   )
 }
