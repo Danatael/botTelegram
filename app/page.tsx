@@ -20,50 +20,50 @@ export default function WitmacBot() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-sky-50">
+    <div className="min-h-screen bg-black text-white">
       {/* Header similar a Telegram */}
-      <header className="bg-blue-600 text-white p-4 shadow-lg">
+      <header className="bg-blue-900 text-white p-4 shadow-lg">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-              <User className="w-6 h-6" />
+            <div className="w-10 h-10 bg-blue-800 rounded-full flex items-center justify-center">
+              <User className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-lg">Witmac Asistencia</h1>
-              <p className="text-blue-100 text-sm">Bot de Registro</p>
+              <h1 className="font-bold text-lg text-white">Witmac Asistencia</h1>
+              <p className="text-blue-200 text-sm">Bot de Registro</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/dashboard">
               <Button variant="outline" size="sm" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-                <BarChart3 className="w-4 h-4 mr-1" />
+                <BarChart3 className="w-4 h-4 mr-1 text-white" />
                 Dashboard
               </Button>
             </Link>
             <div className="text-right">
-              <div className="text-sm font-mono">{currentTime.toLocaleTimeString("es-MX")}</div>
-              <div className="text-xs text-blue-100">{currentTime.toLocaleDateString("es-MX")}</div>
+              <div className="text-sm font-mono text-white">{currentTime.toLocaleTimeString("es-MX")}</div>
+              <div className="text-xs text-blue-200">{currentTime.toLocaleDateString("es-MX")}</div>
             </div>
           </div>
         </div>
       </header>
 
       {/* Contenido principal */}
-      <main className="max-w-md mx-auto bg-white min-h-[calc(100vh-80px)] shadow-xl">
+      <main className="max-w-md mx-auto bg-black text-white min-h-[calc(100vh-80px)] shadow-xl">
         {activeView === "chat" && <TelegramBotIntegration />}
         {activeView === "qr" && <QRScanner onBack={() => setActiveView("chat")} />}
         {activeView === "manual" && <AttendanceForm onBack={() => setActiveView("chat")} />}
       </main>
 
       {/* Status bar inferior */}
-      <div className="max-w-md mx-auto bg-white border-t p-2">
-        <div className="flex justify-center items-center gap-4 text-xs text-gray-500">
-          <Badge variant="outline" className="flex items-center gap-1">
-            <CheckCircle className="w-3 h-3 text-green-500" />
+      <div className="max-w-md mx-auto bg-black border-t border-gray-700 p-2">
+        <div className="flex justify-center items-center gap-4 text-xs text-gray-200">
+          <Badge variant="outline" className="flex items-center gap-1 border-green-500 text-green-300">
+            <CheckCircle className="w-3 h-3 text-green-400" />
             Sistema Activo
           </Badge>
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Clock className="w-3 h-3 text-blue-500" />
+          <Badge variant="outline" className="flex items-center gap-1 border-blue-500 text-blue-300">
+            <Clock className="w-3 h-3 text-blue-400" />
             Horario Laboral
           </Badge>
         </div>

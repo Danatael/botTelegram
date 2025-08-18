@@ -4,14 +4,15 @@ import { useEffect, useState } from "react"
 interface RegistroReciente {
   id: number
   hora_entrada: string
+  ubicacion_entrada?: string | null
+  hora_salida?: string | null
+  ubicacion_salida?: string | null
   empleado: {
     nombre: string
     departamento?: string | null
     codigo_empleado?: string | null
   }
   // Puedes agregar más campos si tu backend los provee
-  // hora_salida?: string | null
-  // ubicacion?: string | null
   // horas?: string | null
   // estado?: string | null
 }
@@ -58,10 +59,17 @@ export function RegistrosRecientesCard() {
                   </td>
                   <td className="py-2 px-2">{r.empleado?.departamento || 'Sin departamento'}</td>
                   <td className="py-2 px-2">
-                    <span className="block">Entrada: <span className="font-mono">{typeof r.hora_entrada === "string" ? r.hora_entrada : "-"}</span></span>
-                    {/* Si tienes hora_salida en el futuro, puedes mostrarla aquí */}
+                    <span className="block">Entrada: <span className="font-mono">{r.hora_entrada || '-'}</span></span>
+                    {r.hora_salida && r.hora_salida !== '-' && (
+                      <span className="block">Salida: <span className="font-mono">{r.hora_salida}</span></span>
+                    )}
                   </td>
-                  <td className="py-2 px-2">-</td>
+                  <td className="py-2 px-2">
+                    <span className="block">Entrada: <span className="font-mono">{r.ubicacion_entrada || '-'}</span></span>
+                    {r.ubicacion_salida && r.ubicacion_salida !== '-' && (
+                      <span className="block">Salida: <span className="font-mono">{r.ubicacion_salida}</span></span>
+                    )}
+                  </td>
                   <td className="py-2 px-2">-</td>
                   <td className="py-2 px-2">
                     <span className="inline-block rounded px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Completo</span>
