@@ -13,7 +13,6 @@ model asistencias {
   id             Int       @id @default(autoincrement())
   empleado_id    Int
   fecha          DateTime  @db.Date
-  ubicacion      String?   @db.VarChar(100)
   observaciones  String?   @db.Text
   creado_en      DateTime? @default(now()) @db.DateTime(0)
   actualizado_en DateTime? @default(now()) @db.DateTime(0)
@@ -32,6 +31,7 @@ model entradas {
   asistencia_id Int
   empleado_id   Int
   hora_entrada  DateTime?   @db.DateTime(0)
+  ubicacion     String?     @db.VarChar(100)
   asistencia    asistencias @relation(fields: [asistencia_id], references: [id])
   empleado      empleados   @relation(fields: [empleado_id], references: [id])
 }
@@ -61,6 +61,7 @@ model salidas {
   asistencia_id Int
   empleado_id   Int
   hora_salida   DateTime?   @db.DateTime(0)
+  ubicacion     String?     @db.VarChar(100)
   asistencia    asistencias @relation(fields: [asistencia_id], references: [id])
   empleado      empleados   @relation(fields: [empleado_id], references: [id])
 }

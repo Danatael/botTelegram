@@ -53,14 +53,7 @@ export async function registrarEntrada(telegramId: number, nombre: string) {
     console.log('[registrarEntrada] empleado:', empleado);
     const hoy = new Date();
     const asistencia = await getOrCreateAsistenciaDelDia(empleado.id, hoy);
-    // Actualizar la ubicación textual en la asistencia del día
-    await prisma.asistencias.update({
-      where: { id: asistencia.id },
-      data: {
-        ubicacion: "Manantiales de Tehuacán #704, El Riego, Ex- Hacienda, 75763 Tehuacán, Puebla, México."
-      }
-    });
-    console.log('[registrarEntrada] asistencia:', asistencia);
+    // Ya no se registra ubicación en asistencias
     // Verificar si ya existe una entrada para esta asistencia hoy
     const entradaExistente = await prisma.entradas.findFirst({
       where: { asistencia_id: asistencia.id, empleado_id: empleado.id }
@@ -160,13 +153,7 @@ export async function registrarSalida(telegramId: number, nombre: string) {
   const empleado = await getOrCreateEmpleado(telegramId, nombre);
   const hoy = new Date();
   const asistencia = await getOrCreateAsistenciaDelDia(empleado.id, hoy);
-  // Actualizar la ubicación textual en la asistencia del día
-  await prisma.asistencias.update({
-    where: { id: asistencia.id },
-    data: {
-      ubicacion: "Manantiales de Tehuacán #704, El Riego, Ex- Hacienda, 75763 Tehuacán, Puebla, México."
-    }
-  });
+  // Ya no se registra ubicación en asistencias
   // Verificar si ya existe una salida para esta asistencia hoy
   const salidaExistente = await prisma.salidas.findFirst({
     where: { asistencia_id: asistencia.id, empleado_id: empleado.id }
@@ -174,6 +161,50 @@ export async function registrarSalida(telegramId: number, nombre: string) {
   if (salidaExistente) throw new Error('Ya registraste tu salida hoy.');
   await prisma.salidas.create({
     data: { asistencia_id: asistencia.id, empleado_id: empleado.id, hora_salida: hoy }
+  });
+  return asistencia;
+}
+
+// Recibe la ubicación y la guarda en la asistencia del día
+export async function registrarEntradaConUbicacion(telegramId: number, nombre: string, ubicacion: string) {
+  try {
+    const empleado = await getOrCreateEmpleado(telegramId, nombre);
+    const hoy = new Date();
+    const asistencia = await getOrCreateAsistenciaDelDia(empleado.id, hoy);
+    // Verificar si ya existe una entrada para esta asistencia hoy
+    const entradaExistente = await prisma.entradas.findFirst({
+      where: { asistencia_id: asistencia.id, empleado_id: empleado.id }
+    });
+    if (entradaExistente) throw new Error('Ya registraste tu entrada hoy.');
+    await prisma.entradas.create({
+      data: {
+        asistencia_id: asistencia.id,
+        empleado_id: empleado.id,
+        hora_entrada: hoy,
+        ubicacion // Guardar ubicación en la tabla entradas
+      }
+    });
+    return asistencia;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function registrarSalidaConUbicacion(telegramId: number, nombre: string, ubicacion: string) {
+  const empleado = await getOrCreateEmpleado(telegramId, nombre);
+  const hoy = new Date();
+  const asistencia = await getOrCreateAsistenciaDelDia(empleado.id, hoy);
+  const salidaExistente = await prisma.salidas.findFirst({
+    where: { asistencia_id: asistencia.id, empleado_id: empleado.id }
+  });
+  if (salidaExistente) throw new Error('Ya registraste tu salida hoy.');
+  await prisma.salidas.create({
+    data: {
+      asistencia_id: asistencia.id,
+      empleado_id: empleado.id,
+      hora_salida: hoy,
+      ubicacion // Guardar ubicación en la tabla salidas
+    }
   });
   return asistencia;
 }

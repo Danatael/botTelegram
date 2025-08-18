@@ -9,7 +9,9 @@ import {
   registrarEntrada,
   iniciarComida,
   regresarTrabajo,
-  registrarSalida
+  registrarSalida,
+  registrarEntradaConUbicacion,
+  registrarSalidaConUbicacion
 } from './asistencia-service';
 
 // Función para crear el bot (se ejecuta después de cargar las variables de entorno)
@@ -55,7 +57,7 @@ function createBot() {
   
   // Consultas sobre ubicación o donde registrar
   if (lowerMessage.includes('donde') || lowerMessage.includes('dónde') || lowerMessage.includes('ubicación')) {
-    return '� *¿Dónde registrar asistencia?*\n\n' +
+    return '📍 *¿Dónde registrar asistencia?*\n\n' +
            '• **Aquí mismo** con este bot de Telegram\n' +
            '• En los **terminales** de la oficina\n' +
            '• Desde la **aplicación web** de TMAC\n' +
@@ -65,7 +67,7 @@ function createBot() {
   
   // Consultas sobre faltas o ausencias
   if (lowerMessage.includes('falta') || lowerMessage.includes('ausencia') || lowerMessage.includes('no vine')) {
-    return '� *Registro de Ausencias*\n\n' +
+    return '⚠️ *Registro de Ausencias*\n\n' +
            '📋 **Para justificar faltas:**\n' +
            '1. Contacta a tu supervisor inmediato\n' +
            '2. Presenta documentación si es necesaria\n' +
@@ -248,11 +250,32 @@ bot.hears(/historial|historia|registros anteriores|mis registros/i, (ctx) => {
   );
 });
 
-// Manejar callbacks de botones mejorado
+// Guardar estado temporal de usuarios esperando ubicación
+const pendingLocation: Record<number, { tipo: 'entrada' | 'salida', nombre: string }> = {};
+
+// Modificar callback_query para pedir solo ubicación
 bot.on('callback_query', async (ctx) => {
   const callbackData = 'data' in ctx.callbackQuery ? ctx.callbackQuery.data : null;
   const userName = ctx.from?.first_name || 'Usuario';
   const telegramId = ctx.from?.id;
+  if (!telegramId) return;
+
+  if (callbackData === 'entrada' || callbackData === 'salida') {
+    pendingLocation[telegramId] = { tipo: callbackData, nombre: userName };
+    await ctx.reply(
+      'Para registrar tu ' + (callbackData === 'entrada' ? 'entrada' : 'salida') + ', es necesario que compartas tu ubicación actual.\n\n' +
+      'Esto es una medida de control para validar que realmente te encuentras en el lugar de trabajo.',
+      {
+        reply_markup: {
+          keyboard: [[{ text: '📍 Enviar ubicación', request_location: true }]],
+          resize_keyboard: true,
+          one_time_keyboard: true
+        }
+      }
+    );
+    ctx.answerCbQuery();
+    return;
+  }
   const now = new Date();
   const timeString = now.toLocaleString('es-MX', {
     timeZone: 'America/Mexico_City',
@@ -264,33 +287,7 @@ bot.on('callback_query', async (ctx) => {
   });
 
   try {
-    if (callbackData === 'entrada') {
-      await registrarEntrada(telegramId, userName);
-      ctx.answerCbQuery();
-      ctx.reply(
-        `✅ *Entrada Registrada*\n\n` +
-        `👤 ${userName}\n` +
-        `⏰ ${timeString}\n` +
-        `📍 Ubicación: Pendiente de implementar\n\n` +
-        `_El registro se guardó en la base de datos._`,
-        { parse_mode: 'Markdown' }
-      );
-      // Mostrar opciones adicionales
-      const nextActions = {
-        inline_keyboard: [
-          [
-            { text: '🍽️ Iniciar hora de comida', callback_data: 'iniciar_comida' }
-          ],
-          [
-            { text: '🔙 Regresar a trabajar', callback_data: 'regresar_trabajo' }
-          ],
-          [
-            { text: '🏁 Registrar salida', callback_data: 'salida' }
-          ]
-        ]
-      };
-      ctx.reply('¿Qué deseas hacer a continuación?', { reply_markup: nextActions });
-    } else if (callbackData === 'iniciar_comida') {
+    if (callbackData === 'iniciar_comida') {
       await iniciarComida(telegramId, userName);
       ctx.answerCbQuery('Hora de comida iniciada');
       ctx.reply('🍽️ ¡Hora de comida registrada! Disfruta tu descanso. Cuando regreses, pulsa "Regresar a trabajar".', {
@@ -337,6 +334,50 @@ bot.on('callback_query', async (ctx) => {
     ctx.reply('❌ Error al registrar la acción en la base de datos. Intenta de nuevo o contacta a soporte.');
   }
 });
+
+// ================= FLUJO DE REGISTRO DE ENTRADA/SALIDA CON UBICACIÓN =================
+bot.on('location', async (ctx) => {
+  const telegramId = ctx.from?.id;
+  const userName = ctx.from?.first_name || 'Usuario';
+  if (!telegramId || !pendingLocation[telegramId]) return;
+
+  const { tipo, nombre } = pendingLocation[telegramId];
+  const loc = ctx.message.location;
+  const ubicacion = `${loc.latitude},${loc.longitude}`;
+
+  try {
+    if (tipo === 'entrada') {
+      await registrarEntradaConUbicacion(telegramId, nombre, ubicacion);
+      // Mensaje de confirmación (sin mostrar coordenadas)
+      await ctx.reply('✅ Entrada registrada exitosamente.');
+      // Mostrar opciones adicionales
+      const nextActions = {
+        inline_keyboard: [
+          [{ text: '🍽️ Iniciar hora de comida', callback_data: 'iniciar_comida' }],
+          [{ text: '🔙 Regresar a trabajar', callback_data: 'regresar_trabajo' }],
+          [{ text: '🏁 Registrar salida', callback_data: 'salida' }]
+        ]
+      };
+      // Añadir mensaje con botones
+      await ctx.reply(
+        '¿Qué deseas hacer a continuación?',
+        { reply_markup: nextActions }
+      );
+    } else if (tipo === 'salida') {
+      await registrarSalidaConUbicacion(telegramId, nombre, ubicacion);
+      // Mensaje de confirmación y sugerencia de descanso
+      await ctx.reply(
+        '🏁 Salida registrada con ubicación.\n\n¡Que descanses! Nos vemos mañana 👋',
+        { parse_mode: 'Markdown' }
+      );
+    }
+  } catch (e) {
+    await ctx.reply('❌ Error al registrar: ' + (e instanceof Error ? e.message : ''));
+  } finally {
+    delete pendingLocation[telegramId];
+  }
+});
+// ================= FIN FLUJO DE REGISTRO DE ENTRADA/SALIDA CON UBICACIÓN =================
 
 // Manejar mensajes de texto con IA simple
 bot.on('text', (ctx) => {
