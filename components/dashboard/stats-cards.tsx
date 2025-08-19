@@ -16,8 +16,8 @@ export function StatsCards({ dateRange, department }: StatsCardsProps) {
     fetch("/api/asistencias/presentes")
       .then((res) => res.json())
       .then((data) => setPresentToday(data.presentes))
-    // Obtener empleados totales
-    fetch("/api/asistencias")
+    // Obtener empleados totales desde la tabla empleados
+    fetch("/api/empleados")
       .then((res) => res.json())
       .then((data) => setTotalEmployees(Array.isArray(data) ? data.length : null))
   }, [])

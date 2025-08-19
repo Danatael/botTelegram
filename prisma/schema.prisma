@@ -32,6 +32,7 @@ model entradas {
   empleado_id   Int
   hora_entrada  DateTime?   @db.DateTime(0)
   ubicacion     String?     @db.VarChar(100)
+  validado      Boolean     @default(false) @db.TinyInt
   asistencia    asistencias @relation(fields: [asistencia_id], references: [id])
   empleado      empleados   @relation(fields: [empleado_id], references: [id])
 }
@@ -62,6 +63,7 @@ model salidas {
   empleado_id   Int
   hora_salida   DateTime?   @db.DateTime(0)
   ubicacion     String?     @db.VarChar(100)
+  validado      Boolean     @default(false) @db.TinyInt
   asistencia    asistencias @relation(fields: [asistencia_id], references: [id])
   empleado      empleados   @relation(fields: [empleado_id], references: [id])
 }

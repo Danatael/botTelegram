@@ -61,6 +61,8 @@ export async function GET() {
           checkOut: salida ? formatDateTime(salida.hora_salida) : '-',
           locationIn: r.ubicacion || '-',
           locationOut: salida?.ubicacion || '-',
+          locationInValidado: typeof r.validado === 'boolean' ? r.validado : !!r.validado,
+          locationOutValidado: typeof salida?.validado === 'boolean' ? salida.validado : !!salida?.validado,
           status: salida ? 'Completo' : 'Activo',
           hours: salida && r.hora_entrada && salida.hora_salida ?
             ((new Date(salida.hora_salida).getTime() - new Date(r.hora_entrada).getTime()) / 3600000).toFixed(2) : 0
