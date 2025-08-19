@@ -87,7 +87,7 @@ export function AttendanceTable({ limit }: AttendanceTableProps) {
   }
 
   return (
-    <div className="rounded-md border bg-white text-black">
+    <div className="rounded-md border bg-black text-white">
       {/* Modal para el mapa */}
       {modalOpen && mapCoords && (
         <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
@@ -129,49 +129,49 @@ export function AttendanceTable({ limit }: AttendanceTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-black">Empleado</TableHead>
-            <TableHead className="text-black">Departamento</TableHead>
-            <TableHead className="flex items-center gap-1 text-black">
-              <Clock className="w-4 h-4 text-black" />
+            <TableHead className="text-white">Empleado</TableHead>
+            <TableHead className="text-white">Departamento</TableHead>
+            <TableHead className="flex items-center gap-1 text-white">
+              <Clock className="w-4 h-4 text-white" />
               Horario
             </TableHead>
-            <TableHead className="text-black">
+            <TableHead className="text-white">
               <span className="inline-flex items-center gap-1">
-                <MapPin className="w-4 h-4 text-black" />
+                <MapPin className="w-4 h-4 text-white" />
                 Ubicación
               </span>
             </TableHead>
-            <TableHead className="text-black">Estado</TableHead>
+            <TableHead className="text-white">Estado</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {displayData.length === 0 && (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-gray-400 bg-white">Sin registros</TableCell>
+              <TableCell colSpan={6} className="text-center text-gray-400 bg-black">Sin registros</TableCell>
             </TableRow>
           )}
           {displayData.map((record) => (
-            <TableRow key={record.id} className="bg-white text-black">
+            <TableRow key={record.id} className="bg-black text-white">
               <TableCell>
                 <div>
-                  <div className="font-medium text-black">{record.name}</div>
-                  <div className="text-sm text-gray-500">{record.id}</div>
+                  <div className="font-medium text-white">{record.name}</div>
+                  <div className="text-sm text-gray-400">{record.id}</div>
                 </div>
               </TableCell>
-              <TableCell className="text-black">{record.department}</TableCell>
-              <TableCell className="text-black">
+              <TableCell className="text-white">{record.department}</TableCell>
+              <TableCell className="text-white">
                 <div className="text-sm">
                   <div>Entrada: {record.checkIn}</div>
                   <div>Salida: {record.checkOut}</div>
                 </div>
               </TableCell>
-              <TableCell className="text-black">
+              <TableCell className="text-white">
                 <div className="text-sm">
                   <div>
                     Entrada: {record.locationIn && record.locationIn !== '-' ? (
                       <>
                         <button
-                          className="text-blue-600 underline hover:text-blue-400 cursor-pointer bg-transparent border-0 p-0"
+                          className="text-blue-400 underline hover:text-blue-200 cursor-pointer bg-transparent border-0 p-0"
                           onClick={() => openMapModal(record.locationIn, 'entrada')}
                           type="button"
                         >
@@ -191,7 +191,7 @@ export function AttendanceTable({ limit }: AttendanceTableProps) {
                     Salida: {record.locationOut && record.locationOut !== '-' ? (
                       <>
                         <button
-                          className="text-blue-600 underline hover:text-blue-400 cursor-pointer bg-transparent border-0 p-0"
+                          className="text-blue-400 underline hover:text-blue-200 cursor-pointer bg-transparent border-0 p-0"
                           onClick={() => openMapModal(record.locationOut, 'salida')}
                           type="button"
                         >
@@ -209,7 +209,7 @@ export function AttendanceTable({ limit }: AttendanceTableProps) {
                   </div>
                 </div>
               </TableCell>
-              <TableCell className="text-black">{record.hours && record.hours !== 0 ? `${record.hours}h` : "-"}</TableCell>
+              <TableCell className="text-white">{record.hours && record.hours !== 0 ? `${record.hours}h` : "-"}</TableCell>
               <TableCell>{getStatusBadge(record.status)}</TableCell>
             </TableRow>
           ))}

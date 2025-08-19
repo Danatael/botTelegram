@@ -54,79 +54,28 @@ export default function Dashboard() {
       </header>
 
       <div className="p-6 space-y-6">
-        {/* Filtros */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="w-5 h-5" />
-              Filtros de Análisis
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-gray-500" />
-                <Select value={dateRange} onValueChange={setDateRange}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1d">Último día</SelectItem>
-                    <SelectItem value="7d">Últimos 7 días</SelectItem>
-                    <SelectItem value="30d">Últimos 30 días</SelectItem>
-                    <SelectItem value="90d">Últimos 3 meses</SelectItem>
-                    <SelectItem value="1y">Último año</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-gray-500" />
-                <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los Departamentos</SelectItem>
-                    <SelectItem value="campo-norte">Campo - Zona Norte</SelectItem>
-                    <SelectItem value="campo-sur">Campo - Zona Sur</SelectItem>
-                    <SelectItem value="campo-centro">Campo - Zona Centro</SelectItem>
-                    <SelectItem value="oficina">Oficina Central</SelectItem>
-                    <SelectItem value="mantenimiento">Mantenimiento</SelectItem>
-                    <SelectItem value="supervision">Supervisión</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Button variant="outline" size="sm">
-                Aplicar Filtros
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Estadísticas principales */}
         <StatsCards dateRange={dateRange} department={selectedDepartment} />
 
         {/* Tabs principales */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Resumen General</TabsTrigger>
-            <TabsTrigger value="attendance">Asistencia Detallada</TabsTrigger>
-            <TabsTrigger value="compliance">Cumplimiento Legal</TabsTrigger>
-            <TabsTrigger value="reports">Reportes</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 bg-black text-white">
+            <TabsTrigger value="overview" className="text-white data-[state=active]:bg-gray-800 data-[state=active]:text-white">Resumen General</TabsTrigger>
+            <TabsTrigger value="attendance" className="text-white data-[state=active]:bg-gray-800 data-[state=active]:text-white">Asistencia Detallada</TabsTrigger>
+            <TabsTrigger value="compliance" className="text-white data-[state=active]:bg-gray-800 data-[state=active]:text-white">Cumplimiento Legal</TabsTrigger>
+            <TabsTrigger value="reports" className="text-white data-[state=active]:bg-gray-800 data-[state=active]:text-white">Reportes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Gráfica de asistencia por día */}
-              <Card>
+              <Card className="bg-black text-white">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-white">
                     <TrendingUp className="w-5 h-5" />
                     Tendencia de Asistencia
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-gray-300">
                     Asistencia diaria en los últimos{" "}
                     {dateRange === "7d" ? "7 días" : dateRange === "30d" ? "30 días" : "días seleccionados"}
                   </CardDescription>
@@ -137,13 +86,13 @@ export default function Dashboard() {
               </Card>
 
               {/* Gráfica por departamento */}
-              <Card>
+              <Card className="bg-black text-white">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-white">
                     <Users className="w-5 h-5" />
                     Asistencia por Departamento
                   </CardTitle>
-                  <CardDescription>Distribución de asistencia por área de trabajo</CardDescription>
+                  <CardDescription className="text-gray-300">Distribución de asistencia por área de trabajo</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <DepartmentChart dateRange={dateRange} />
@@ -156,10 +105,10 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="attendance" className="space-y-6">
-            <Card>
+            <Card className="bg-black text-white">
               <CardHeader>
-                <CardTitle>Registro Completo de Asistencia</CardTitle>
-                <CardDescription>Historial detallado de todos los registros de asistencia</CardDescription>
+                <CardTitle className="text-white">Registro Completo de Asistencia</CardTitle>
+                <CardDescription className="text-gray-300">Historial detallado de todos los registros de asistencia</CardDescription>
               </CardHeader>
               <CardContent>
                 <AttendanceTable />

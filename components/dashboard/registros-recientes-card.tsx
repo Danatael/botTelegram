@@ -27,16 +27,16 @@ export function RegistrosRecientesCard() {
   }, [])
 
   return (
-    <Card className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
+    <Card className="bg-black text-white flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
       <CardHeader>
-        <CardTitle className="text-sm font-medium text-gray-600">Registros Recientes</CardTitle>
-        <p className="text-xs text-gray-400">Últimos registros de asistencia del sistema</p>
+        <CardTitle className="text-sm font-medium text-white">Registros Recientes</CardTitle>
+        <p className="text-xs text-gray-300">Últimos registros de asistencia del sistema</p>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
+          <table className="min-w-full text-sm bg-black text-white">
             <thead>
-              <tr className="text-left text-gray-500 border-b">
+              <tr className="text-left text-gray-300 border-b border-gray-700">
                 <th className="py-2 px-2">Empleado</th>
                 <th className="py-2 px-2">Departamento</th>
                 <th className="py-2 px-2">Horario</th>
@@ -48,31 +48,31 @@ export function RegistrosRecientesCard() {
             <tbody>
               {registros.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-4 text-center text-gray-400">Sin registros recientes</td>
+                  <td colSpan={6} className="py-4 text-center text-gray-400 bg-black">Sin registros recientes</td>
                 </tr>
               )}
               {registros.map((r) => (
-                <tr key={r.id} className="border-b last:border-0">
+                <tr key={r.id} className="border-b border-gray-700 last:border-0">
                   <td className="py-2 px-2">
-                    <div className="font-semibold">{r.empleado?.nombre ?? '—'}</div>
+                    <div className="font-semibold text-white">{r.empleado?.nombre ?? '—'}</div>
                     <div className="text-xs text-gray-400">{r.empleado?.codigo_empleado ?? ''}</div>
                   </td>
-                  <td className="py-2 px-2">{r.empleado?.departamento || 'Sin departamento'}</td>
-                  <td className="py-2 px-2">
+                  <td className="py-2 px-2 text-white">{r.empleado?.departamento || 'Sin departamento'}</td>
+                  <td className="py-2 px-2 text-white">
                     <span className="block">Entrada: <span className="font-mono">{r.hora_entrada || '-'}</span></span>
                     {r.hora_salida && r.hora_salida !== '-' && (
                       <span className="block">Salida: <span className="font-mono">{r.hora_salida}</span></span>
                     )}
                   </td>
-                  <td className="py-2 px-2">
+                  <td className="py-2 px-2 text-white">
                     <span className="block">Entrada: <span className="font-mono">{r.ubicacion_entrada || '-'}</span></span>
                     {r.ubicacion_salida && r.ubicacion_salida !== '-' && (
                       <span className="block">Salida: <span className="font-mono">{r.ubicacion_salida}</span></span>
                     )}
                   </td>
-                  <td className="py-2 px-2">-</td>
+                  <td className="py-2 px-2 text-white">-</td>
                   <td className="py-2 px-2">
-                    <span className="inline-block rounded px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Completo</span>
+                    <span className="inline-block rounded px-2 py-0.5 text-xs font-medium bg-green-700 text-white">Completo</span>
                   </td>
                 </tr>
               ))}
