@@ -74,8 +74,10 @@ export async function GET() {
           empleado: r.empleado,
           hora_entrada: formatDateTime(r.hora_entrada),
           ubicacion_entrada: r.ubicacion || '-',
+          validado_entrada: r.validado ?? false,
           hora_salida: salida ? formatDateTime(salida.hora_salida) : '-',
           ubicacion_salida: salida?.ubicacion || '-',
+          validado_salida: salida?.validado ?? false,
         };
       })
     );

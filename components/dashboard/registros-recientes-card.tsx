@@ -7,18 +7,19 @@ interface RegistroReciente {
   ubicacion_entrada?: string | null
   hora_salida?: string | null
   ubicacion_salida?: string | null
+  validado_entrada?: boolean
+  validado_salida?: boolean
   empleado: {
     nombre: string
     departamento?: string | null
     codigo_empleado?: string | null
   }
-  // Puedes agregar más campos si tu backend los provee
-  // horas?: string | null
-  // estado?: string | null
 }
 
 export function RegistrosRecientesCard() {
   const [registros, setRegistros] = useState<RegistroReciente[]>([])
+  const [mapCoords, setMapCoords] = useState<string | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
     fetch("/api/asistencias/recientes")
@@ -33,6 +34,15 @@ export function RegistrosRecientesCard() {
         }
       })
   }, [])
+
+  const openMap = (coords: string) => {
+    setMapCoords(coords)
+    setModalOpen(true)
+  }
+  const closeMapModal = () => {
+    setModalOpen(false)
+    setMapCoords(null)
+  }
 
   return (
     <Card className="bg-black text-white flex flex-col gap-6 rounded-xl border py-6 shadow-sm">
@@ -49,8 +59,7 @@ export function RegistrosRecientesCard() {
                 <th className="py-2 px-2">Departamento</th>
                 <th className="py-2 px-2">Horario</th>
                 <th className="py-2 px-2">Ubicación</th>
-                <th className="py-2 px-2">Horas</th>
-                <th className="py-2 px-2">Estado</th>
+                <th className="py-2 px-2">Validación</th>
               </tr>
             </thead>
             <tbody>
@@ -65,7 +74,7 @@ export function RegistrosRecientesCard() {
                     <div className="font-semibold text-white">{r.empleado?.nombre ?? '—'}</div>
                     <div className="text-xs text-gray-400">{r.empleado?.codigo_empleado ?? ''}</div>
                   </td>
-                  <td className="py-2 px-2 text-white">{r.empleado?.departamento || 'Sin departamento'}</td>
+                  <td className="py-2 px-2 text-white">{r.empleado?.departamento || '-'}</td>
                   <td className="py-2 px-2 text-white">
                     <span className="block">Entrada: <span className="font-mono">{r.hora_entrada || '-'}</span></span>
                     {r.hora_salida && r.hora_salida !== '-' && (
@@ -73,20 +82,54 @@ export function RegistrosRecientesCard() {
                     )}
                   </td>
                   <td className="py-2 px-2 text-white">
-                    <span className="block">Entrada: <span className="font-mono">{r.ubicacion_entrada || '-'}</span></span>
+                    <span className="block">Entrada: {r.ubicacion_entrada && r.ubicacion_entrada !== '-' ? (
+                      <button onClick={() => openMap(r.ubicacion_entrada!)} className="text-blue-400 underline hover:text-blue-300">{r.ubicacion_entrada}</button>
+                    ) : <span className="text-gray-400">-</span>}</span>
                     {r.ubicacion_salida && r.ubicacion_salida !== '-' && (
-                      <span className="block">Salida: <span className="font-mono">{r.ubicacion_salida}</span></span>
+                      <span className="block">Salida: <button onClick={() => openMap(r.ubicacion_salida!)} className="text-blue-400 underline hover:text-blue-300">{r.ubicacion_salida}</button></span>
                     )}
                   </td>
-                  <td className="py-2 px-2 text-white">-</td>
                   <td className="py-2 px-2">
-                    <span className="inline-block rounded px-2 py-0.5 text-xs font-medium bg-green-700 text-white">Completo</span>
+                    <div className="flex flex-col gap-1">
+                      <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${r.validado_entrada ? 'bg-green-700 text-white' : 'bg-red-600 text-white'}`}>{r.validado_entrada ? 'Entrada validada' : 'No validado'}</span>
+                      {r.hora_salida && r.ubicacion_salida && (
+                        <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${r.validado_salida ? 'bg-green-700 text-white' : 'bg-red-600 text-white'}`}>{r.validado_salida ? 'Salida validada' : 'No validado'}</span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        {modalOpen && mapCoords && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+            <div className="bg-black text-white rounded-lg shadow-lg p-10 max-w-2xl w-full relative pointer-events-auto" style={{ margin: 'auto', top: '2vh', position: 'absolute', left: 0, right: 0 }}>
+              <button
+                className="absolute top-2 right-2 text-gray-300 hover:text-white text-3xl"
+                onClick={closeMapModal}
+                aria-label="Cerrar"
+              >
+                ×
+              </button>
+              <div className="mb-4 font-semibold text-center text-xl">Ubicación en el mapa</div>
+              <iframe
+                src={`https://maps.google.com/maps?q=${mapCoords}&z=17&output=embed`}
+                width="100%"
+                height="400"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Mapa de ubicación"
+              />
+              <div className="mt-4 text-base text-center text-gray-300">Coordenadas: {mapCoords}</div>
+              <div className="mt-2 text-xs text-gray-400 text-center">
+                <a href={mapCoords ? `https://maps.google.com/?q=${mapCoords}` : '#'} target="_blank" rel="noopener noreferrer" className="underline text-blue-400">Ver en Google Maps</a>
+              </div>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
