@@ -20,33 +20,33 @@ export default function Dashboard() {
   const [selectedDepartment, setSelectedDepartment] = useState("all")
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-700 text-white">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
+      <header className="bg-black border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard de Asistencia - Witmac</h1>
-            <p className="text-gray-600 mt-1">Panel de control y análisis histórico</p>
+            <h1 className="text-2xl font-bold text-white">Dashboard de Asistencia - Witmac</h1>
+            <p className="text-gray-400 mt-1">Panel de control y análisis histórico</p>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="outline" className="flex items-center gap-1">
+          <div className="bg-black text-white flex items-center gap-3">
+            <Badge variant="outline" className="bg-black text-white flex items-center gap-1">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               Sistema Activo
             </Badge>
-            <Link href="/notifications">
-              <Button variant="outline" size="sm">
-                <Bell className="w-4 h-4 mr-2" />
+            <Link href="/notifications" className="bg-black text-white">
+              <Button variant="outline" size="sm" className="bg-black text-white border-white hover:bg-gray-900">
+                <Bell className="w-4 h-4 mr-2 text-white" />
                 Notificaciones
               </Button>
             </Link>
             <Link href="/reports">
-              <Button variant="outline" size="sm">
-                <Shield className="w-4 h-4 mr-2" />
+              <Button variant="outline" size="sm" className="bg-black text-white border-white hover:bg-gray-900">
+                <Shield className="w-4 h-4 mr-2 text-white" />
                 Reportes Legales
               </Button>
             </Link>
-            <Button variant="outline" size="sm">
-              <Download className="w-4 h-4 mr-2" />
+            <Button variant="outline" size="sm" className="bg-black text-white border-white hover:bg-gray-900">
+              <Download className="w-4 h-4 mr-2 text-white" />
               Exportar
             </Button>
           </div>
@@ -118,8 +118,8 @@ export default function Dashboard() {
 
           <TabsContent value="compliance" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
+              <Card className="bg-black text-white">
+                <CardHeader> 
                   <CardTitle className="flex items-center gap-2">
                     <Clock className="w-5 h-5" />
                     Cumplimiento de Horarios
@@ -131,7 +131,7 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-black text-white">
                 <CardHeader>
                   <CardTitle>Horas Trabajadas vs. Requeridas</CardTitle>
                   <CardDescription>Comparación con las 8 horas laborales requeridas</CardDescription>
@@ -143,14 +143,14 @@ export default function Dashboard() {
             </div>
 
             {/* Alertas de cumplimiento */}
-            <Card>
+            <Card className="bg-black text-white">
               <CardHeader>
                 <CardTitle>Alertas de Cumplimiento</CardTitle>
                 <CardDescription>Situaciones que requieren atención según la Secretaría del Trabajo</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-black border border-yellow-200 rounded-lg">
                     <div>
                       <p className="font-medium text-yellow-800">3 empleados con horas extras excesivas</p>
                       <p className="text-sm text-yellow-600">Más de 9 horas diarias en la última semana</p>
@@ -160,7 +160,7 @@ export default function Dashboard() {
                     </Badge>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-black border border-red-200 rounded-lg">
                     <div>
                       <p className="font-medium text-red-800">2 empleados sin registro de salida</p>
                       <p className="text-sm text-red-600">Registros incompletos del día anterior</p>
@@ -170,7 +170,7 @@ export default function Dashboard() {
                     </Badge>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-black border border-green-200 rounded-lg">
                     <div>
                       <p className="font-medium text-green-800">95% de cumplimiento general</p>
                       <p className="text-sm text-green-600">Dentro de los parámetros legales</p>

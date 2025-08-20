@@ -1,8 +1,7 @@
 import { Telegraf } from 'telegraf';
 import { 
   findMatchingCategory, 
-  getRandomResponse, 
-  getTimeBasedGreeting,
+  getRandomResponse,
   companyData 
 } from './bot-training';
 import {
@@ -79,69 +78,8 @@ function createBot() {
   return null;
 }
 
-// Comando de inicio mejorado con IA
-bot.start((ctx) => {
-  const userName = ctx.from?.first_name || 'Usuario';
-  const timeBasedGreeting = getTimeBasedGreeting();
-  
-  const welcomeMessage = 
-    `${timeBasedGreeting}\n\n` +
-    `¡Hola **${userName}**! 👋 Bienvenido al Bot de Asistencias ${companyData.name}.\n\n` +
-    '🤖 **Soy tu asistente virtual inteligente** para el control de asistencias.\n\n' +
-    '*🎯 ¿Qué puedo hacer por ti?*\n' +
-    '✅ Registrar tu entrada y salida\n' +
-    '📊 Consultar tu estado actual\n' +
-    '📋 Ver tu historial de asistencias\n' +
-    '⏰ Información sobre horarios y políticas\n' +
-    '❓ Responder tus preguntas en lenguaje natural\n\n' +
-    '*📋 Comandos principales:*\n' +
-    '• `/registrar` - Registrar asistencia\n' +
-    '• `/estado` - Ver estado actual\n' +
-    '• `/historial` - Ver historial\n' +
-    '• `/ayuda` - Manual completo\n\n' +
-    '💡 **¡Novedad!** También puedes escribirme en lenguaje natural:\n' +
-    '• _"Hola, buenos días"_\n' +
-    '• _"Quiero registrar mi entrada"_\n' +
-    '• _"¿Cuál es mi horario?"_\n' +
-    '• _"Olvidé marcar mi salida"_\n\n' +
-    '🚀 **¡Comencemos!** ¿Qué necesitas hacer hoy?';
-
-  ctx.reply(welcomeMessage, { parse_mode: 'Markdown' });
-});
-
-// Comando de ayuda mejorado
-bot.help((ctx) => {
-  const helpMessage = 
-    '🤖 *Manual Completo - Bot de Asistencias TMAC*\n\n' +
-    '*📋 COMANDOS PRINCIPALES*\n' +
-    '• `/start` - Reiniciar conversación\n' +
-    '• `/registrar` - Registrar entrada/salida\n' +
-    '• `/estado` - Ver tu estado actual\n' +
-    '• `/historial` - Ver historial completo\n' +
-    '• `/ayuda` - Mostrar esta ayuda\n\n' +
-    '*💬 LENGUAJE NATURAL*\n' +
-    'También entiendo frases como:\n' +
-    '• "Hola, buenos días"\n' +
-    '• "Quiero registrar mi entrada"\n' +
-    '• "¿Cuál es mi horario?"\n' +
-    '• "Olvidé marcar mi salida"\n' +
-    '• "Tengo un problema"\n\n' +
-    '*⏰ HORARIOS LABORALES*\n' +
-    '• Entrada: 08:00 - 08:30\n' +
-    '• Almuerzo: 12:00 - 13:00\n' +
-    '• Salida: 17:00 en adelante\n\n' +
-    '*🆘 SOPORTE*\n' +
-    'Si tienes problemas técnicos:\n' +
-    '• Reinicia con /start\n' +
-    '• Contacta a IT si persiste\n' +
-    '• Para temas de RRHH, habla con tu supervisor\n\n' +
-    '_Versión 1.0 - Desarrollado para TMAC_';
-
-  ctx.reply(helpMessage, { parse_mode: 'Markdown' });
-});
-
-// Comando para registrar asistencia
-bot.command('registrar', (ctx) => {
+// Mostrar botones de asistencia al escribir /start, /registrar o cualquier mensaje que contenga 'registrar' o 'start'
+const showAttendanceButtons = (ctx: any) => {
   const keyboard = {
     inline_keyboard: [
       [
@@ -150,16 +88,15 @@ bot.command('registrar', (ctx) => {
       ]
     ]
   };
+  ctx.reply('Selecciona una opción:', {
+    reply_markup: keyboard,
+    parse_mode: 'Markdown'
+  });
+};
 
-  ctx.reply(
-    '⏰ *Registro de Asistencia*\n\n' +
-    'Selecciona el tipo de registro que deseas realizar:',
-    {
-      reply_markup: keyboard,
-      parse_mode: 'Markdown'
-    }
-  );
-});
+bot.start(showAttendanceButtons);
+bot.command('registrar', showAttendanceButtons);
+bot.hears(/registrar|start/i, showAttendanceButtons);
 
 // Comando para ver estado actual
 bot.command('estado', (ctx) => {
