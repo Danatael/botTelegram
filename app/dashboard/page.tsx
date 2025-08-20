@@ -187,18 +187,18 @@ export default function Dashboard() {
           <TabsContent value="reports" className="space-y-6">
             <div className="mb-6">
               <Link href="/reports">
-                <Card className="cursor-pointer hover:shadow-md transition-shadow bg-blue-50 border-blue-200">
+                <Card className="cursor-pointer hover:shadow-md transition-shadow bg-black border-blue-200">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-blue-800">
+                    <CardTitle className="flex items-center gap-2 text-blue-400">
                       <Shield className="w-6 h-6" />
                       Reportes de Cumplimiento Legal
                     </CardTitle>
-                    <CardDescription className="text-blue-600">
+                    <CardDescription className="text-blue-300">
                       Accede al sistema completo de reportes para la Secretaría del Trabajo
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button className="w-full">
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                       <FileText className="w-4 h-4 mr-2" />
                       Ir a Reportes Legales
                     </Button>
@@ -208,39 +208,39 @@ export default function Dashboard() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <Card className="cursor-pointer hover:shadow-md transition-shadow bg-black">
                 <CardHeader>
-                  <CardTitle className="text-lg">Reporte Mensual</CardTitle>
-                  <CardDescription>Resumen completo del mes actual</CardDescription>
+                  <CardTitle className="text-lg text-white">Reporte Mensual</CardTitle>
+                  <CardDescription className="text-gray-300">Resumen completo del mes actual</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                     <Download className="w-4 h-4 mr-2" />
                     Generar PDF
                   </Button>
                 </CardContent>
               </Card>
 
-              <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <Card className="cursor-pointer hover:shadow-md transition-shadow bg-black">
                 <CardHeader>
-                  <CardTitle className="text-lg">Reporte Legal</CardTitle>
-                  <CardDescription>Para presentar a la Secretaría del Trabajo</CardDescription>
+                  <CardTitle className="text-lg text-white">Reporte Legal</CardTitle>
+                  <CardDescription className="text-gray-300">Para presentar a la Secretaría del Trabajo</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                     <Download className="w-4 h-4 mr-2" />
                     Generar PDF
                   </Button>
                 </CardContent>
               </Card>
 
-              <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <Card className="cursor-pointer hover:shadow-md transition-shadow bg-black">
                 <CardHeader>
-                  <CardTitle className="text-lg">Reporte por Empleado</CardTitle>
-                  <CardDescription>Historial individual detallado</CardDescription>
+                  <CardTitle className="text-lg text-white">Reporte por Empleado</CardTitle>
+                  <CardDescription className="text-gray-300">Historial individual detallado</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                     <Download className="w-4 h-4 mr-2" />
                     Generar PDF
                   </Button>

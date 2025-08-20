@@ -23,7 +23,15 @@ export function RegistrosRecientesCard() {
   useEffect(() => {
     fetch("/api/asistencias/recientes")
       .then(res => res.json())
-      .then(data => setRegistros(data))
+      .then(data => {
+        if (Array.isArray(data)) {
+          setRegistros(data)
+        } else if (data && Array.isArray(data.recientes)) {
+          setRegistros(data.recientes)
+        } else {
+          setRegistros([])
+        }
+      })
   }, [])
 
   return (
@@ -51,7 +59,7 @@ export function RegistrosRecientesCard() {
                   <td colSpan={6} className="py-4 text-center text-gray-400 bg-black">Sin registros recientes</td>
                 </tr>
               )}
-              {registros.map((r) => (
+              {Array.isArray(registros) && registros.map((r) => (
                 <tr key={r.id} className="border-b border-gray-700 last:border-0">
                   <td className="py-2 px-2">
                     <div className="font-semibold text-white">{r.empleado?.nombre ?? '—'}</div>
