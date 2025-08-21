@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-function replacerBigInt(obj: any) {
+function replacerBigInt(obj: any): any {
   if (Array.isArray(obj)) {
     return obj.map(replacerBigInt);
   } else if (obj && typeof obj === 'object') {

@@ -12,6 +12,7 @@ export function StatsCards({ dateRange, department }: StatsCardsProps) {
   const [totalEmployees, setTotalEmployees] = useState<number | null>(null)
   const [avgHoursWorked, setAvgHoursWorked] = useState<number | null>(null)
   const [totalHours, setTotalHours] = useState<number | null>(null)
+  const [complianceRate, setComplianceRate] = useState<number | null>(null)
 
   useEffect(() => {
     // Obtener presentes hoy
@@ -30,6 +31,10 @@ export function StatsCards({ dateRange, department }: StatsCardsProps) {
     fetch("/api/asistencias/horas-totales")
       .then((res) => res.json())
       .then((data) => setTotalHours(typeof data.total === 'number' ? data.total : null))
+    // Obtener porcentaje de cumplimiento (8h+)
+    fetch("/api/asistencias/cumplimiento")
+      .then((res) => res.json())
+      .then((data) => setComplianceRate(Number(data.cumplimiento)))
   }, [])
 
   // En producción, estos datos vendrían de la API
@@ -37,7 +42,7 @@ export function StatsCards({ dateRange, department }: StatsCardsProps) {
     totalEmployees: totalEmployees ?? 0,
     presentToday: presentToday ?? 0,
     avgHoursWorked: avgHoursWorked ?? 0,
-    complianceRate: 95.5,
+    complianceRate: complianceRate ?? 0,
     lateArrivals: 3,
     totalHours: totalHours ?? 0,
   }
