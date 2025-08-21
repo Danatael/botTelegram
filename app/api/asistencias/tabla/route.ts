@@ -54,7 +54,7 @@ export async function GET() {
       recientes.map(r => {
         const salida = r.asistencia?.salidas?.length ? r.asistencia.salidas[r.asistencia.salidas.length - 1] : null;
         return {
-          id: r.empleado?.codigo_empleado || r.empleado?.id || r.id,
+          id: r.id, // Usar siempre el id único de la entrada
           name: r.empleado?.nombre || '-',
           department: r.empleado?.departamento || '-',
           checkIn: formatDateTime(r.hora_entrada),

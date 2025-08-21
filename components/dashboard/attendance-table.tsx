@@ -67,7 +67,6 @@ export function AttendanceTable({ limit }: AttendanceTableProps) {
     setValidating(true)
     setValidationMessage(null)
     try {
-      // Aquí deberías pasar el id de la entrada/salida real, pero como solo tienes coords, se asume que el backend puede buscar por coords y tipo
       const res = await fetch(`/api/asistencias/validar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -76,6 +75,10 @@ export function AttendanceTable({ limit }: AttendanceTableProps) {
       const data = await res.json()
       if (res.ok) {
         setValidationMessage('Validado correctamente')
+        // Recargar datos de la tabla después de validar
+        fetch("/api/asistencias/tabla")
+          .then(res => res.json())
+          .then(data => setAttendanceData(data))
       } else {
         setValidationMessage(data.error || 'Error al validar')
       }
