@@ -23,32 +23,32 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-700 text-white">
       {/* Header */}
       <header className="bg-black border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-white">Dashboard de Asistencia - Witmac</h1>
             <p className="text-gray-400 mt-1">Panel de control y análisis histórico</p>
           </div>
-          <div className="bg-black text-white flex items-center gap-3">
+          <div className="bg-black text-white flex flex-wrap items-center gap-3">
             <Badge variant="outline" className="bg-black text-white flex items-center gap-1">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               Sistema Activo
             </Badge>
             <Link href="/notifications" className="bg-black text-white">
-              <Button variant="outline" size="sm" className="bg-black text-white border-white hover:bg-gray-900">
+              <Button variant="outline" size="sm" className="bg-black text-white border-white hover:bg-gray-900 hover:text-white transition-colors">
                 <Bell className="w-4 h-4 mr-2 text-white" />
-                Notificaciones
+                <span className="group-hover:text-white">Notificaciones</span>
               </Button>
             </Link>
             <Link href="/reports">
-              <Button variant="outline" size="sm" className="bg-black text-white border-white hover:bg-gray-900">
+              <Button variant="outline" size="sm" className="bg-black text-white border-white hover:bg-gray-900 hover:text-white transition-colors">
                 <Shield className="w-4 h-4 mr-2 text-white" />
-                Reportes Legales
+                <span className="group-hover:text-white">Reportes Legales</span>
               </Button>
             </Link>
-            <Button variant="outline" size="sm" className="bg-black text-white border-white hover:bg-gray-900">
+            {/* <Button variant="outline" size="sm" className="bg-black text-white border-white hover:bg-gray-900 hover:text-white transition-colors">
               <Download className="w-4 h-4 mr-2 text-white" />
-              Exportar
-            </Button>
+              <span className="group-hover:text-white">Exportar</span>
+            </Button> */}
           </div>
         </div>
       </header>

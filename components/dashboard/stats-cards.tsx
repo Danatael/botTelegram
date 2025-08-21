@@ -10,6 +10,8 @@ interface StatsCardsProps {
 export function StatsCards({ dateRange, department }: StatsCardsProps) {
   const [presentToday, setPresentToday] = useState<number | null>(null)
   const [totalEmployees, setTotalEmployees] = useState<number | null>(null)
+  const [avgHoursWorked, setAvgHoursWorked] = useState<number | null>(null)
+  const [totalHours, setTotalHours] = useState<number | null>(null)
 
   useEffect(() => {
     // Obtener presentes hoy
@@ -20,16 +22,24 @@ export function StatsCards({ dateRange, department }: StatsCardsProps) {
     fetch("/api/empleados")
       .then((res) => res.json())
       .then((data) => setTotalEmployees(Array.isArray(data) ? data.length : null))
+    // Obtener horas promedio trabajadas hoy
+    fetch("/api/asistencias/horas-promedio")
+      .then((res) => res.json())
+      .then((data) => setAvgHoursWorked(typeof data.promedio === 'number' ? data.promedio : null))
+    // Obtener horas totales trabajadas en el mes actual
+    fetch("/api/asistencias/horas-totales")
+      .then((res) => res.json())
+      .then((data) => setTotalHours(typeof data.total === 'number' ? data.total : null))
   }, [])
 
   // En producción, estos datos vendrían de la API
   const stats = {
     totalEmployees: totalEmployees ?? 0,
     presentToday: presentToday ?? 0,
-    avgHoursWorked: 8.2,
+    avgHoursWorked: avgHoursWorked ?? 0,
     complianceRate: 95.5,
     lateArrivals: 3,
-    totalHours: 1847,
+    totalHours: totalHours ?? 0,
   }
 
   const cards = [
@@ -70,8 +80,8 @@ export function StatsCards({ dateRange, department }: StatsCardsProps) {
     },
     {
       title: "Horas Totales",
-      value: stats.totalHours.toString(),
-      description: `En los últimos ${dateRange === "7d" ? "7 días" : dateRange === "30d" ? "30 días" : "días"}`,
+      value: stats.totalHours.toFixed(1),
+      description: `En el mes actual`,
       icon: Calendar,
       color: "text-indigo-600",
     },
