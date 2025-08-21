@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -14,10 +14,27 @@ import { StatsCards } from "@/components/dashboard/stats-cards"
 import { AttendanceTable } from "@/components/dashboard/attendance-table"
 import { RegistrosRecientesCard } from "@/components/dashboard/registros-recientes-card"
 import Link from "next/link"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
 
 export default function Dashboard() {
   const [dateRange, setDateRange] = useState("7d")
   const [selectedDepartment, setSelectedDepartment] = useState("all")
+  const [modalEmpleadoOpen, setModalEmpleadoOpen] = useState(false)
+  const [empleados, setEmpleados] = useState([])
+  const [empleadoId, setEmpleadoId] = useState("")
+  const [periodo, setPeriodo] = useState("mes")
+
+  useEffect(() => {
+    if (modalEmpleadoOpen && empleados.length === 0) {
+      fetch("/api/empleados").then(r => r.json()).then(data => setEmpleados(data))
+    }
+  }, [modalEmpleadoOpen])
+
+  const handleGenerarPDF = () => {
+    if (!empleadoId) return
+    window.open(`/api/reports/empleado?empleadoId=${empleadoId}&periodo=${periodo}`, "_blank")
+    setModalEmpleadoOpen(false)
+  }
 
   return (
     <div className="min-h-screen bg-gray-700 text-white">
@@ -207,45 +224,102 @@ export default function Dashboard() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card className="cursor-pointer hover:shadow-md transition-shadow bg-black">
-                <CardHeader>
-                  <CardTitle className="text-lg text-white">Reporte Mensual</CardTitle>
-                  <CardDescription className="text-gray-300">Resumen completo del mes actual</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                    <Download className="w-4 h-4 mr-2" />
-                    Generar PDF
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="cursor-pointer hover:shadow-md transition-shadow bg-black">
-                <CardHeader>
-                  <CardTitle className="text-lg text-white">Reporte Legal</CardTitle>
-                  <CardDescription className="text-gray-300">Para presentar a la Secretaría del Trabajo</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                    <Download className="w-4 h-4 mr-2" />
-                    Generar PDF
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="cursor-pointer hover:shadow-md transition-shadow bg-black">
-                <CardHeader>
-                  <CardTitle className="text-lg text-white">Reporte por Empleado</CardTitle>
-                  <CardDescription className="text-gray-300">Historial individual detallado</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                    <Download className="w-4 h-4 mr-2" />
-                    Generar PDF
-                  </Button>
-                </CardContent>
-              </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-4">
+                <Card className="cursor-pointer hover:shadow-md transition-shadow bg-black">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-white">Reporte Mensual</CardTitle>
+                    <CardDescription className="text-gray-300">Resumen completo del mes actual</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={() => window.open('/api/reports/mensual', '_blank')}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Generar PDF Mensual
+                    </Button>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow bg-black">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-white">Reporte Legal</CardTitle>
+                    <CardDescription className="text-gray-300">Para presentar a la Secretaría del Trabajo</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                      <Download className="w-4 h-4 mr-2" />
+                      Generar PDF
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="flex flex-col gap-4">
+                <Card className="cursor-pointer hover:shadow-md transition-shadow bg-black">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-white">Reporte por Empleado</CardTitle>
+                    <CardDescription className="text-gray-300">Historial individual detallado</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setModalEmpleadoOpen(true)}>
+                      <Download className="w-4 h-4 mr-2" />
+                      Generar PDF
+                    </Button>
+                    <Dialog open={modalEmpleadoOpen} onOpenChange={setModalEmpleadoOpen}>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Reporte por Empleado</DialogTitle>
+                          <DialogDescription>Selecciona un empleado y el periodo para generar el PDF</DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block mb-1">Empleado</label>
+                            <select className="w-full p-2 rounded text-black" value={empleadoId} onChange={e => setEmpleadoId(e.target.value)}>
+                              <option value="">Selecciona un empleado</option>
+                              {empleados.map((emp: any) => (
+                                <option key={emp.id} value={emp.id}>{emp.nombre}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block mb-1">Periodo</label>
+                            <select className="w-full p-2 rounded text-black" value={periodo} onChange={e => setPeriodo(e.target.value)}>
+                              <option value="dia">Día</option>
+                              <option value="semana">Semana</option>
+                              <option value="mes">Mes</option>
+                              <option value="año">Año</option>
+                            </select>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleGenerarPDF} disabled={!empleadoId}>
+                            <Download className="w-4 h-4 mr-2" />
+                            Generar PDF
+                          </Button>
+                          <DialogClose asChild>
+                            <Button variant="outline">Cancelar</Button>
+                          </DialogClose>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow bg-black">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-white">Reporte Diario</CardTitle>
+                    <CardDescription className="text-gray-300">Resumen de asistencia del día actual</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={() => window.open('/api/reports/diario', '_blank')}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Generar PDF Diario
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
