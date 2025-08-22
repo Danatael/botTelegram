@@ -2,6 +2,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Clock, MapPin } from "lucide-react"
 import { useEffect, useState } from "react"
+import { Calendar } from "@/components/ui/calendar"
+import { Select } from "@/components/ui/select"
+import { addDays, format } from "date-fns"
 
 interface AttendanceRecord {
   id: string | number
@@ -15,6 +18,7 @@ interface AttendanceRecord {
   locationOutValidado?: boolean
   status: string
   hours: number | string
+  fecha: string
 }
 
 interface AttendanceTableProps {
@@ -29,13 +33,33 @@ export function AttendanceTable({ limit }: AttendanceTableProps) {
   const [validating, setValidating] = useState(false)
   const [modalType, setModalType] = useState<'entrada' | 'salida' | null>(null)
 
+  // Filtros
+  const [empleados, setEmpleados] = useState<any[]>([])
+  const [empleadoId, setEmpleadoId] = useState("")
+  const [periodo, setPeriodo] = useState("mes")
+  const [fechaInicio, setFechaInicio] = useState<Date | undefined>(undefined)
+  const [fechaFin, setFechaFin] = useState<Date | undefined>(undefined)
+
   useEffect(() => {
-    fetch("/api/asistencias/tabla")
-      .then(res => res.json())
-      .then(data => setAttendanceData(data))
+    fetch("/api/empleados").then(r => r.json()).then(setEmpleados)
   }, [])
 
-  const displayData = limit ? attendanceData.slice(0, limit) : attendanceData
+  useEffect(() => {
+    let url = "/api/asistencias/tabla?"
+    if (empleadoId) url += `empleadoId=${empleadoId}&`
+    if (periodo === "personalizado" && fechaInicio && fechaFin) {
+      url += `fechaInicio=${format(fechaInicio, 'yyyy-MM-dd')}&fechaFin=${format(fechaFin, 'yyyy-MM-dd')}`
+    } else if (periodo !== "personalizado") {
+      url += `periodo=${periodo}`
+    }
+    fetch(url)
+      .then(res => res.json())
+      .then(data => setAttendanceData(data))
+  }, [empleadoId, periodo, fechaInicio, fechaFin])
+
+  const displayData = Array.isArray(attendanceData)
+    ? (limit ? attendanceData.slice(0, limit) : attendanceData)
+    : [];
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -91,6 +115,41 @@ export function AttendanceTable({ limit }: AttendanceTableProps) {
 
   return (
     <div className="rounded-md border bg-black text-white">
+      {/* Filtros */}
+      <div className="flex flex-wrap gap-4 p-4 bg-black">
+        <div>
+          <label className="block mb-1 text-xs text-white">Empleado</label>
+          <select className="p-2 rounded text-black bg-white border border-white focus:ring-2 focus:ring-blue-400" value={empleadoId} onChange={e => setEmpleadoId(e.target.value)}>
+            <option value="">Todos</option>
+            {empleados.map((emp: any) => (
+              <option key={emp.id} value={emp.id}>{emp.nombre}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block mb-1 text-xs text-white">Periodo</label>
+          <select className="p-2 rounded text-black bg-white border border-white focus:ring-2 focus:ring-blue-400" value={periodo} onChange={e => setPeriodo(e.target.value)}>
+            <option value="dia">Día</option>
+            <option value="semana">Semana</option>
+            <option value="mes">Mes</option>
+            <option value="año">Año</option>
+            <option value="personalizado">Personalizado</option>
+          </select>
+        </div>
+        {periodo === "personalizado" && (
+          <div className="flex gap-2 items-end">
+            <div>
+              <label className="block mb-1 text-xs text-white">Fecha inicio</label>
+              <Calendar mode="single" selected={fechaInicio} onSelect={setFechaInicio} className="bg-white text-black rounded border border-white" />
+            </div>
+            <div>
+              <label className="block mb-1 text-xs text-white">Fecha fin</label>
+              <Calendar mode="single" selected={fechaFin} onSelect={setFechaFin} className="bg-white text-black rounded border border-white" />
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Modal para el mapa */}
       {modalOpen && mapCoords && (
         <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
@@ -144,6 +203,7 @@ export function AttendanceTable({ limit }: AttendanceTableProps) {
                 Ubicación
               </span>
             </TableHead>
+            <TableHead className="text-white">Fecha</TableHead>
             <TableHead className="text-white">Estado</TableHead>
           </TableRow>
         </TableHeader>
@@ -212,7 +272,7 @@ export function AttendanceTable({ limit }: AttendanceTableProps) {
                   </div>
                 </div>
               </TableCell>
-              <TableCell className="text-white">{record.hours && record.hours !== 0 ? `${record.hours}h` : "-"}</TableCell>
+              <TableCell className="text-white">{record.fecha}</TableCell>
               <TableCell>{getStatusBadge(record.status)}</TableCell>
             </TableRow>
           ))}

@@ -53,7 +53,6 @@ export async function GET() {
         }
       },
       orderBy: { hora_entrada: 'desc' },
-      take: 10,
       include: {
         empleado: true,
         asistencia: {

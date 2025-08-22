@@ -304,7 +304,7 @@ bot.on('location', async (ctx) => {
       await registrarSalidaConUbicacion(telegramId, nombre, ubicacion);
       // Mensaje de confirmación y sugerencia de descanso
       await ctx.reply(
-        '🏁 Salida registrada con ubicación.\n\n¡Que descanses! Nos vemos mañana 👋',
+        '🏁 Salida registrada con ubicación.\n\n¡Que descanses! Nos vemos mañana 👋 ,recuerda de escribir "registrar" para que se registre tu entrada correctamente el día de mañana.',
         { parse_mode: 'Markdown' }
       );
     }

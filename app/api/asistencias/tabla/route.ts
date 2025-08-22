@@ -34,12 +34,49 @@ function formatDateTime(dt: Date | string | null): string {
   return `${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}`;
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    // Últimos 50 registros de entrada (puedes ajustar el rango si lo deseas)
+    const { searchParams } = new URL(req.url);
+    const empleadoId = searchParams.get('empleadoId');
+    const periodo = searchParams.get('periodo');
+    const fechaInicio = searchParams.get('fechaInicio');
+    const fechaFin = searchParams.get('fechaFin');
+
+    let where: any = {};
+    // Filtro por empleado
+    if (empleadoId) {
+      where.empleado_id = Number(empleadoId); // <- corregido para usar el campo real de la base de datos
+    }
+    // Filtro por periodo
+    let start: Date | undefined, end: Date | undefined;
+    const now = new Date();
+    if (periodo === 'dia') {
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    } else if (periodo === 'semana') {
+      const day = now.getDay() || 7;
+      start = new Date(now);
+      start.setDate(now.getDate() - day + 1);
+      start.setHours(0,0,0,0);
+      end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    } else if (periodo === 'mes') {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    } else if (periodo === 'año') {
+      start = new Date(now.getFullYear(), 0, 1);
+      end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+    } else if (periodo === 'personalizado' && fechaInicio && fechaFin) {
+      start = new Date(fechaInicio);
+      end = new Date(fechaFin);
+      end.setHours(23,59,59,999);
+    }
+    if (start && end) {
+      where.hora_entrada = { gte: start, lte: end };
+    }
+
     const recientes = await prisma.entradas.findMany({
+      where,
       orderBy: { hora_entrada: 'desc' },
-      take: 50,
       include: {
         empleado: true,
         asistencia: {
@@ -54,7 +91,7 @@ export async function GET() {
       recientes.map(r => {
         const salida = r.asistencia?.salidas?.length ? r.asistencia.salidas[r.asistencia.salidas.length - 1] : null;
         return {
-          id: r.id, // Usar siempre el id único de la entrada
+          id: r.id,
           name: r.empleado?.nombre || '-',
           department: r.empleado?.departamento || '-',
           checkIn: formatDateTime(r.hora_entrada),
@@ -65,7 +102,8 @@ export async function GET() {
           locationOutValidado: typeof salida?.validado === 'boolean' ? salida.validado : !!salida?.validado,
           status: salida ? 'Completo' : 'Activo',
           hours: salida && r.hora_entrada && salida.hora_salida ?
-            ((new Date(salida.hora_salida).getTime() - new Date(r.hora_entrada).getTime()) / 3600000).toFixed(2) : 0
+            ((new Date(salida.hora_salida).getTime() - new Date(r.hora_entrada).getTime()) / 3600000).toFixed(2) : 0,
+          fecha: r.hora_entrada ? (typeof r.hora_entrada === 'string' ? r.hora_entrada.split('T')[0] : (r.hora_entrada instanceof Date ? r.hora_entrada.toISOString().split('T')[0] : '-')) : '-',
         };
       })
     );
